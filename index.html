@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>덕장중학교 3학년 7과 영단어 퀴즈</title>
+<style>
+  :root{
+    --bg:#eef5f9; --card:#ffffff; --ink:#1d2b36; --muted:#5f7280; --line:#d6e2ea;
+    --pri:#1f7aa8; --pri-ink:#ffffff; --ok:#1f9d61; --ok-bg:#e3f6ec; --bad:#d64545; --bad-bg:#fde8e8;
+    --accent:#f2a93b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;line-height:1.5;min-height:100vh}
+  #app{max-width:640px;margin:0 auto;padding:12px 16px 40px}
+  header.top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0 12px}
+  .brand{font-weight:800;font-size:1.15rem;color:var(--pri);word-break:keep-all;min-width:0}
+  #who{font-size:.9rem;color:var(--muted);white-space:nowrap;flex:none}
+  .screen{display:none}
+  .screen.on{display:block}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 6px rgba(20,60,90,.05)}
+  h1{font-size:1.5rem;margin:0 0 6px;word-break:keep-all}
+  h2{font-size:1.2rem;margin:0 0 10px}
+  p.sub{color:var(--muted);margin:0 0 16px}
+  label{display:block;font-weight:600;margin:10px 0 4px}
+  input[type=text]{width:100%;font-size:1.1rem;padding:12px 14px;border:2px solid var(--line);border-radius:12px;outline:none;background:#fff;color:var(--ink)}
+  input[type=text]:focus{border-color:var(--pri)}
+  button{font:inherit;cursor:pointer;border:none;border-radius:12px}
+  .btn{background:var(--pri);color:var(--pri-ink);padding:12px 18px;font-weight:700;font-size:1rem}
+  .btn.ghost{background:#fff;color:var(--pri);border:2px solid var(--pri)}
+  .btn.small{padding:8px 12px;font-size:.9rem}
+  .btn.wide{width:100%;margin-top:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row > *{flex:1}
+  .mode{cursor:pointer;transition:transform .1s}
+  .mode:hover{transform:translateY(-2px)}
+  .mode .emoji{font-size:2rem}
+  .badge{display:inline-block;margin-top:8px;background:var(--ok-bg);color:var(--ok);font-weight:700;font-size:.85rem;padding:4px 10px;border-radius:999px}
+  .times{display:flex;gap:8px;margin-top:12px}
+  .times button{flex:1;padding:14px 0;font-size:1.05rem}
+  .stat{display:flex;justify-content:space-between;font-size:.95rem;color:var(--muted);margin-bottom:10px;gap:8px;flex-wrap:wrap}
+  .stat b{color:var(--ink)}
+  .bar{height:8px;background:var(--line);border-radius:999px;overflow:hidden;margin-bottom:14px}
+  .bar > i{display:block;height:100%;background:var(--pri);width:0;transition:width .2s linear}
+  .qtype{display:inline-block;font-size:.8rem;font-weight:700;color:var(--pri);background:#e2f0f7;padding:3px 10px;border-radius:999px;margin-bottom:10px}
+  .qtype.retry{background:#fff2dc;color:#b06b00}
+  .prompt{font-size:1.9rem;font-weight:800;text-align:center;margin:8px 0 6px;word-break:break-word}
+  .prompt.def{font-size:1.15rem;font-weight:600;line-height:1.5}
+  .prompt.ex{font-size:1.2rem;font-weight:600;line-height:1.6}
+  .blank{display:inline-block;min-width:90px;border-bottom:3px solid var(--pri);margin:0 4px}
+  .hint{text-align:center;color:var(--muted);margin-bottom:14px;min-height:1.5em}
+  .speak{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+  .choices{display:grid;gap:10px}
+  .choice{background:#fff;border:2px solid var(--line);padding:14px 16px;text-align:left;font-size:1.05rem;color:var(--ink);display:flex;gap:12px;align-items:center}
+  .choice:hover{border-color:var(--pri)}
+  .choice .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--bg);font-size:.85rem;font-weight:700;flex:none}
+  .choice.ok{border-color:var(--ok);background:var(--ok-bg)}
+  .choice.bad{border-color:var(--bad);background:var(--bad-bg)}
+  .spell{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;font-size:1.6rem;font-weight:800;letter-spacing:1px;margin:6px 0 12px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .spell span{min-width:22px;text-align:center}
+  .spell .gap{min-width:18px}
+  .spell .miss{color:var(--accent)}
+  .tiles{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
+  .tile{width:44px;height:48px;font-size:1.3rem;font-weight:800;background:#fff;border:2px solid var(--line);color:var(--ink);font-family:ui-monospace,Menlo,Consolas,monospace}
+  .tile:hover{border-color:var(--pri)}
+  .tile.used{visibility:hidden}
+  .answer-line{min-height:56px;border:2px dashed var(--line);border-radius:12px;padding:4px}
+  .answer-line .tile{background:#e2f0f7;border-color:#b8d8e8}
+  .fb{margin-top:14px;padding:12px 14px;border-radius:12px;font-weight:700;display:none}
+  .fb.ok{display:block;background:var(--ok-bg);color:var(--ok)}
+  .fb.bad{display:block;background:var(--bad-bg);color:var(--bad)}
+  .fb small{display:block;font-weight:500;color:var(--ink);margin-top:4px}
+  .next{display:none}
+  .big{font-size:2.6rem;font-weight:800;color:var(--pri);text-align:center;margin:6px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  .grid2 div{background:var(--bg);border-radius:12px;padding:10px;text-align:center}
+  .grid2 b{display:block;font-size:1.3rem}
+  .wlist{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .wlist span{background:var(--bad-bg);color:var(--bad);border-radius:8px;padding:4px 8px;font-size:.9rem}
+  table{width:100%;border-collapse:collapse;font-size:.92rem}
+  th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--muted);font-weight:600}
+  td.num{text-align:right;font-weight:700}
+  .muted{color:var(--muted);font-size:.9rem}
+  .linkbtn{background:none;color:var(--muted);text-decoration:underline;padding:4px}
+  @media (max-width:420px){ .brand{font-size:1rem} .prompt{font-size:1.6rem} .tile{width:38px;height:44px;font-size:1.15rem} }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <div class="brand">🐋 덕장중학교 3학년 7과 영단어 퀴즈</div>
+    <div id="who"></div>
+  </header>
+
+  <!-- 시작 -->
+  <section id="s-start" class="screen">
+    <div class="card">
+      <h1>덕장중학교 3학년 7과 영단어 퀴즈</h1>
+      <p class="sub" id="lesson-sub"></p>
+      <form id="f-start" autocomplete="off">
+        <label for="in-id">학번</label>
+        <input type="text" id="in-id" placeholder="예: 10315" inputmode="numeric" maxlength="12">
+        <label for="in-name">이름</label>
+        <input type="text" id="in-name" placeholder="예: 홍길동" maxlength="20">
+        <button class="btn wide" type="submit">시작하기</button>
+        <div class="muted" id="start-err" style="color:var(--bad);margin-top:8px"></div>
+      </form>
+    </div>
+  </section>
+
+  <!-- 모드 선택 -->
+  <section id="s-modes" class="screen">
+    <div class="card mode" id="m-study">
+      <div class="emoji">📘</div>
+      <h2>1. 단어 암기 모드</h2>
+      <p class="sub" style="margin:0">시간 제한 없음 · 발음을 듣고 뜻 고르기 · 틀린 단어는 다시 나와요. 모든 단어를 맞히면 완료!</p>
+      <div id="study-badge"></div>
+    </div>
+    <div class="card">
+      <div class="emoji" style="font-size:2rem">⏱️</div>
+      <h2>2. 타임어택</h2>
+      <p class="sub" style="margin:0">정해진 시간 동안 최대한 많이! 정답 10점 · 오답 노트 재도전 정답 7점</p>
+      <div class="times" id="time-btns"></div>
+      <p class="muted" id="note-info" style="margin:10px 0 0"></p>
+    </div>
+    <div class="row">
+      <button class="btn ghost" id="b-rank">🏆 순위표</button>
+      <button class="btn ghost" id="b-logout">사용자 바꾸기</button>
+    </div>
+  </section>
+
+  <!-- 암기 모드 -->
+  <section id="s-study" class="screen">
+    <div class="card">
+      <div class="stat"><span>외운 단어 <b id="st-prog">0/0</b></span><span>틀린 횟수 <b id="st-wrong">0</b></span><span>⏱ <b id="st-time">0:00</b></span></div>
+      <div class="bar"><i id="st-bar"></i></div>
+      <div class="prompt" id="st-word"></div>
+      <div class="speak">
+        <button class="btn ghost small" id="st-say">🔊 다시 듣기</button>
+        <button class="btn ghost small" id="st-slow">🐢 천천히</button>
+      </div>
+      <div class="choices" id="st-choices"></div>
+      <div class="fb" id="st-fb"></div>
+      <button class="btn wide next" id="st-next">다음 ▶ (Enter)</button>
+    </div>
+    <button class="linkbtn" id="st-quit">그만하고 메뉴로</button>
+  </section>
+
+  <!-- 암기 완료 -->
+  <section id="s-studyEnd" class="screen">
+    <div class="card">
+      <h2>🎉 암기 완료!</h2>
+      <div class="big" id="se-time">0:00</div>
+      <p class="muted" style="text-align:center;margin:0" id="se-best"></p>
+      <div class="grid2">
+        <div>푼 문제<b id="se-att">0</b></div>
+        <div>틀린 횟수<b id="se-wrong">0</b></div>
+        <div>한 번에 맞힌 단어<b id="se-first">0</b></div>
+        <div>전체 단어<b id="se-total">0</b></div>
+      </div>
+      <div id="se-wlist-wrap"><b>틀렸던 단어</b><div class="wlist" id="se-wlist"></div></div>
+      <p class="muted" id="se-sync"></p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost" id="se-again">다시 암기</button>
+        <button class="btn" id="se-menu">메뉴로</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 타임어택 -->
+  <section id="s-game" class="screen">
+    <div class="card">
+      <div class="stat"><span>점수 <b id="g-score">0</b></span><span>정답 <b id="g-ok">0</b> · 오답 <b id="g-bad">0</b></span><span>⏱ <b id="g-time">0:00</b></span></div>
+      <div class="bar"><i id="g-bar"></i></div>
+      <div style="text-align:center"><span class="qtype" id="g-type"></span></div>
+      <div class="prompt" id="g-prompt"></div>
+      <div class="hint" id="g-hint"></div>
+      <div class="speak" id="g-speak" style="display:none">
+        <button class="btn ghost small" id="g-say">🔊 다시 듣기</button>
+        <button class="btn ghost small" id="g-slow">🐢 천천히</button>
+      </div>
+      <div id="g-area"></div>
+      <div class="fb" id="g-fb"></div>
+      <button class="btn wide next" id="g-next">다음 ▶ (Enter)</button>
+    </div>
+    <button class="linkbtn" id="g-quit">지금 끝내기</button>
+  </section>
+
+  <!-- 게임 결과 -->
+  <section id="s-gameEnd" class="screen">
+    <div class="card">
+      <h2>⏰ 타임어택 결과</h2>
+      <div class="big" id="ge-score">0점</div>
+      <p class="muted" style="text-align:center;margin:0" id="ge-best"></p>
+      <div class="grid2">
+        <div>정답<b id="ge-ok">0</b></div>
+        <div>오답<b id="ge-bad">0</b></div>
+        <div>정답률<b id="ge-acc">0%</b></div>
+        <div>재도전 정답<b id="ge-retry">0</b></div>
+      </div>
+      <div id="ge-wlist-wrap"><b>오답 노트에 들어간 단어</b><div class="wlist" id="ge-wlist"></div></div>
+      <p class="muted" id="ge-sync"></p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn ghost" id="ge-rank">🏆 순위표</button>
+        <button class="btn" id="ge-menu">메뉴로</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 순위표 -->
+  <section id="s-rank" class="screen">
+    <div class="card">
+      <h2>🏆 순위표</h2>
+      <p class="muted" id="rk-src"></p>
+      <div class="row" style="margin-bottom:10px">
+        <input type="text" id="rk-q" placeholder="학번 또는 이름 검색" style="flex:3">
+        <button class="btn small" id="rk-go" style="flex:1">검색</button>
+      </div>
+      <div id="rk-body"></div>
+      <button class="btn wide" id="rk-menu">메뉴로</button>
+    </div>
+  </section>
+</div>
+
+<script>
+/* =========================================================
+   설정 — 선생님이 고칠 부분은 여기만
+   ========================================================= */
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxjL9mVUz8R1H9thKbNkvqOuqD_G-cZg65lEvHyHxw4LI27lAI1a90dq7LOwm8chy4p/exec";            // Apps Script 웹앱 /exec 주소. 비우면 기기에만 저장
+const LESSON_TITLE = "3학년 7과";
+const TIME_OPTIONS = [2, 3, 5]; // 타임어택 시간(분)
+// 출제 유형: 영→한, 한→영, 듣고 뜻 고르기, 듣고 받아쓰기
+// (다시 넣을 수 있는 유형: "defToWord" 영영풀이, "exampleBlank" 예문 빈칸, "spellFill" 철자 채우기, "arrange" 철자 배열)
+const ENABLED_TYPES = ["wordToKor","korToWord","listenKor","dictation"];
+const POINT = 10, RETRY_POINT = 7;
+
+/* 단어 데이터: w(영단어)·k(뜻) 필수 / def(영영풀이)·ex(예문, 빈칸 ___)·form(빈칸 정답 형태)·exKor(해석) 선택 */
+const WORDS = [
+  { w:"abroad", k:"해외에, 해외로", def:"in or to a foreign country", ex:"My uncle is going to study ___ next year.", form:"abroad", exKor:"삼촌은 내년에 해외에서 공부할 예정이다." },
+  { w:"Arctic", k:"북극 (지방)", def:"the very cold area around the North Pole", ex:"Polar bears live in the ___.", form:"Arctic", exKor:"북극곰은 북극에 산다." },
+  { w:"average", k:"평균의, 보통의", def:"usual or ordinary; typical of most people or things", ex:"The ___ temperature here is about 20°C.", form:"average", exKor:"이곳의 평균 기온은 약 20도이다." },
+  { w:"blood", k:"피", def:"the red liquid that flows through your body", ex:"The nurse took some ___ from my arm.", form:"blood", exKor:"간호사가 내 팔에서 피를 조금 뽑았다." },
+  { w:"blow", k:"(입으로) 불다", def:"to send out air from your mouth", ex:"She closed her eyes and ___ out the candles.", form:"blew", exKor:"그녀는 눈을 감고 촛불을 불어 껐다." },
+  { w:"breathe", k:"숨을 쉬다", def:"to take air into your body and let it out again", ex:"Whales come up to the surface to ___.", form:"breathe", exKor:"고래는 숨을 쉬기 위해 수면으로 올라온다." },
+  { w:"calculate", k:"계산하다", def:"to find an answer by using numbers", ex:"Can you ___ the total cost of the trip?", form:"calculate", exKor:"여행의 총 비용을 계산할 수 있니?" },
+  { w:"camel", k:"낙타", def:"a large desert animal with a long neck and one or two humps on its back", ex:"A ___ can go many days without water.", form:"camel", exKor:"낙타는 물 없이 여러 날을 지낼 수 있다." },
+  { w:"clam", k:"조개", def:"a small sea animal that lives inside a hard shell with two parts", ex:"The sea otter used a stone to open the ___.", form:"clam", exKor:"해달은 돌을 이용해 조개를 열었다." },
+  { w:"completely", k:"완전히", def:"in every way; totally", ex:"The town was ___ covered with snow.", form:"completely", exKor:"그 마을은 완전히 눈으로 덮여 있었다." },
+  { w:"desert", k:"사막", def:"a large dry area with very little rain and few plants", ex:"It hardly ever rains in the ___.", form:"desert", exKor:"사막에는 비가 거의 오지 않는다." },
+  { w:"discover", k:"발견하다", def:"to find something for the first time", ex:"Scientists ___ a new kind of fish last year.", form:"discovered", exKor:"과학자들은 작년에 새로운 종류의 물고기를 발견했다." },
+  { w:"distance", k:"거리", def:"the amount of space between two places", ex:"What is the ___ from here to the station?", form:"distance", exKor:"여기서 역까지의 거리는 얼마니?" },
+  { w:"dive", k:"뛰어들다, 다이빙하다", def:"to jump into water with your head and arms going in first", ex:"Penguins can ___ deep into the ocean.", form:"dive", exKor:"펭귄은 바다 깊이 잠수할 수 있다." },
+  { w:"fall asleep", k:"잠들다", def:"to start sleeping", ex:"I ___ while I was watching TV.", form:"fell asleep", exKor:"나는 TV를 보다가 잠들었다." },
+  { w:"fat", k:"지방", def:"an oily substance under the skin that keeps animals warm", ex:"A thick layer of ___ keeps the seal warm in cold water.", form:"fat", exKor:"두꺼운 지방층이 차가운 물속에서 물범을 따뜻하게 해 준다." },
+  { w:"fool", k:"속이다, 기만하다; 바보", def:"to trick someone into believing something that is not true", ex:"Don't try to ___ me. I know the truth.", form:"fool", exKor:"나를 속이려 하지 마. 나는 진실을 알아." },
+  { w:"forecast", k:"예측, 예보", def:"a statement about what will probably happen in the future", ex:"The weather ___ says it will rain tomorrow.", form:"forecast", exKor:"일기 예보에 따르면 내일 비가 온다고 한다." },
+  { w:"hide", k:"숨다", def:"to go to a place where no one can see or find you", ex:"The cat likes to ___ under the bed.", form:"hide", exKor:"그 고양이는 침대 밑에 숨는 것을 좋아한다." },
+  { w:"in the end", k:"마침내, 결국", def:"finally, after a long time or a lot of trouble", ex:"We got lost many times, but ___ we found the way home.", form:"in the end", exKor:"우리는 여러 번 길을 잃었지만 결국 집에 가는 길을 찾았다." },
+  { w:"million", k:"100만; 수많은", def:"the number 1,000,000", ex:"About one ___ people live in this city.", form:"million", exKor:"이 도시에는 약 100만 명이 산다." },
+  { w:"millions of", k:"수백만의, 수많은", def:"a very large number of", ex:"Every year, ___ people visit this beach.", form:"millions of", exKor:"매년 수백만 명의 사람들이 이 해변을 찾는다." },
+  { w:"mop", k:"대걸레로 닦다", def:"to clean the floor with a wet cloth on a long stick", ex:"Can you ___ the kitchen floor for me?", form:"mop", exKor:"나 대신 부엌 바닥을 대걸레로 닦아 줄래?" },
+  { w:"nearby", k:"근처에, 가까운 곳에", def:"not far away; close", ex:"Is there a bank ___?", form:"nearby", exKor:"근처에 은행이 있나요?" },
+  { w:"ocean", k:"대양, 바다", def:"the very large area of salt water that covers most of the Earth", ex:"The Pacific ___ is the largest in the world.", form:"Ocean", exKor:"태평양은 세계에서 가장 큰 대양이다." },
+  { w:"probably", k:"아마", def:"almost certainly; very likely", ex:"Look at those dark clouds. It will ___ rain soon.", form:"probably", exKor:"저 먹구름 좀 봐. 아마 곧 비가 올 거야." },
+  { w:"scenery", k:"경치, 풍경", def:"the natural things you see in a place, such as mountains, rivers and forests", ex:"We enjoyed the beautiful ___ from the top of the mountain.", form:"scenery", exKor:"우리는 산 정상에서 아름다운 경치를 즐겼다." },
+  { w:"serve", k:"(음식을) 제공하다, 차려 주다", def:"to give food or drinks to people at a meal", ex:"This restaurant ___ fresh seafood.", form:"serves", exKor:"이 식당은 신선한 해산물을 제공한다." },
+  { w:"smash", k:"때려 부수다, 깨뜨리다", def:"to break something into many pieces with great force", ex:"The ball ___ the window.", form:"smashed", exKor:"공이 창문을 깨뜨렸다." },
+  { w:"species", k:"(분류상의) 종", def:"a group of animals or plants of the same kind", ex:"There are many ___ of birds on the island.", form:"species", exKor:"그 섬에는 많은 종의 새들이 있다." },
+  { w:"spot", k:"발견하다, 찾아내다", def:"to see or notice something that is hard to see", ex:"Can you ___ the little bird in the tree?", form:"spot", exKor:"나무에 있는 작은 새를 찾아낼 수 있니?" },
+  { w:"surface", k:"수면, 표면", def:"the top or outside part of something, such as water", ex:"Leaves were floating on the ___ of the lake.", form:"surface", exKor:"나뭇잎들이 호수 수면 위에 떠 있었다." },
+  { w:"surround", k:"둘러싸다", def:"to be all around something or someone", ex:"Tall trees ___ the small house.", form:"surround", exKor:"키 큰 나무들이 그 작은 집을 둘러싸고 있다." },
+  { w:"temperature", k:"온도, 기온", def:"how hot or cold something is", ex:"The ___ dropped below zero last night.", form:"temperature", exKor:"어젯밤 기온이 영하로 떨어졌다." },
+  { w:"tightly", k:"단단히, 꽉", def:"in a firm way so that it is hard to move or open", ex:"Hold my hand ___ when we cross the road.", form:"tightly", exKor:"길을 건널 때 내 손을 꽉 잡아." },
+  { w:"tool", k:"도구", def:"a thing you hold in your hand to help you do a job", ex:"A hammer is a very useful ___.", form:"tool", exKor:"망치는 매우 유용한 도구이다." },
+  { w:"vacuum", k:"진공청소기로 청소하다", def:"to clean using a machine that sucks up dirt and dust", ex:"I ___ my room every Saturday.", form:"vacuum", exKor:"나는 토요일마다 내 방을 진공청소기로 청소한다." },
+  { w:"weather forecast", k:"일기 예보", def:"a report on TV or radio that tells you if it will be sunny, rainy, or cold", ex:"Let's check the ___ before we go hiking.", form:"weather forecast", exKor:"하이킹 가기 전에 일기 예보를 확인하자." },
+  { w:"whale", k:"고래", def:"a very large animal that lives in the sea but breathes air", ex:"The blue ___ is the biggest animal on Earth.", form:"whale", exKor:"흰긴수염고래는 지구에서 가장 큰 동물이다." },
+  { w:"wonder", k:"경이, 경탄, 놀라움", def:"a feeling of surprise and admiration for something amazing", ex:"The children looked up at the stars in ___.", form:"wonder", exKor:"아이들은 경이로움에 차서 별을 올려다보았다." },
+];
+
+/* =========================================================
+   공통 도구
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const norm = s => String(s).toLowerCase().replace(/\s+/g, " ").trim();
+const fmt = sec => { sec = Math.max(0, Math.floor(sec)); return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+const PREFIX = "vocab40_";
+let user = store.get(PREFIX + "user", null);
+const ukey = k => PREFIX + user.id + "_" + user.name + "_" + k;
+
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+  $("#who").textContent = user && id !== "s-start" ? user.id + " " + user.name : "";
+  window.scrollTo(0, 0);
+}
+const curScreen = () => (document.querySelector(".screen.on") || {}).id;
+
+/* ---------- TTS ---------- */
+let ttsOK = ("speechSynthesis" in window) && typeof SpeechSynthesisUtterance !== "undefined";
+let enVoice = null;
+function loadVoices() {
+  if (!("speechSynthesis" in window)) return;
+  const vs = speechSynthesis.getVoices();
+  enVoice = vs.find(v => v.lang === "en-US") || vs.find(v => /^en/i.test(v.lang)) || null;
+}
+if (ttsOK) {
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+  setTimeout(() => { loadVoices(); if (!speechSynthesis.getVoices().length) ttsOK = false; }, 1500);
+}
+function speak(text, rate = 0.9) {
+  if (!ttsOK) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US"; u.rate = rate;
+    if (enVoice) u.voice = enVoice;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+/* ---------- JSONP (구글 시트) ---------- */
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    if (!GAS_URL) return reject(new Error("GAS_URL 없음"));
+    const cb = "vcb_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
+    const s = document.createElement("script");
+    const timer = setTimeout(() => { cleanup(); reject(new Error("timeout")); }, 10000);
+    function cleanup() { clearTimeout(timer); try { delete window[cb]; } catch (e) { window[cb] = undefined; } s.remove(); }
+    window[cb] = data => { cleanup(); resolve(data); };
+    s.onerror = () => { cleanup(); reject(new Error("network")); };
+    const q = new URLSearchParams(Object.assign({}, params, { callback: cb }));
+    s.src = GAS_URL + (GAS_URL.includes("?") ? "&" : "?") + q.toString();
+    document.body.appendChild(s);
+  });
+}
+
+/* ---------- 보기 만들기 ---------- */
+function fieldOf(w, field) { return field === "form" ? (w.form || w.w) : w[field]; }
+function makeChoices(idx, field) {
+  const ans = fieldOf(WORDS[idx], field);
+  const out = [ans];
+  for (const i of shuffle(WORDS.map((_, i) => i).filter(i => i !== idx))) {
+    const v = fieldOf(WORDS[i], field);
+    if (!out.some(o => norm(o) === norm(v))) out.push(v);
+    if (out.length === 4) break;
+  }
+  return { ans, list: shuffle(out) };
+}
+function renderChoices(box, list, onPick) {
+  box.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "choices";
+  list.forEach((txt, i) => {
+    const b = document.createElement("button");
+    b.className = "choice"; b.type = "button";
+    b.innerHTML = '<span class="n">' + (i + 1) + "</span><span>" + esc(txt) + "</span>";
+    b.dataset.val = txt;
+    b.onclick = () => onPick(txt, b);
+    wrap.appendChild(b);
+  });
+  box.appendChild(wrap);
+}
+function markChoices(box, ans, pickedBtn) {
+  box.querySelectorAll(".choice").forEach(b => {
+    if (b.dataset.val === ans) b.classList.add("ok");
+  });
+  if (pickedBtn && pickedBtn.dataset.val !== ans) pickedBtn.classList.add("bad");
+}
+
+/* =========================================================
+   시작 / 모드 화면
+   ========================================================= */
+$("#lesson-sub").textContent = WORDS.length + "단어 · 단어 암기 모드 + 타임어택";
+$("#f-start").addEventListener("submit", e => {
+  e.preventDefault();
+  const id = $("#in-id").value.trim(), name = $("#in-name").value.trim();
+  if (!id || !name) { $("#start-err").textContent = "학번과 이름을 모두 입력하세요."; return; }
+  user = { id, name };
+  store.set(PREFIX + "user", user);
+  goModes();
+});
+function goModes() {
+  if (S && S.timer) clearInterval(S.timer);
+  if (G && G.timer) { clearInterval(G.timer); G.over = true; }
+  if (ttsOK) try { speechSynthesis.cancel(); } catch (e) {}
+  const best = store.get(ukey("studyBest"), null);
+  $("#study-badge").innerHTML = best != null ? '<span class="badge">✓ 암기 완료 · 최고 기록 ' + fmt(best) + "</span>" : "";
+  const tb = $("#time-btns"); tb.innerHTML = "";
+  TIME_OPTIONS.forEach(m => {
+    const b = document.createElement("button");
+    b.className = "btn"; b.textContent = m + "분";
+    b.onclick = () => startGame(m);
+    tb.appendChild(b);
+  });
+  const note = store.get(ukey("wrong"), []);
+  const gbest = store.get(ukey("gameBest"), null);
+  $("#note-info").textContent = "오답 노트 " + note.length + "개" + (gbest != null ? " · 최고 점수 " + gbest + "점" : "") + (ttsOK ? "" : " · (이 기기는 음성 지원이 없어 듣기 문제가 빠져요)");
+  show("s-modes");
+}
+$("#m-study").onclick = () => startStudy();
+$("#b-logout").onclick = () => { user = null; store.set(PREFIX + "user", null); $("#in-id").value = ""; $("#in-name").value = ""; show("s-start"); };
+$("#b-rank").onclick = () => openRank();
+
+/* =========================================================
+   암기 모드
+   ========================================================= */
+let S = null;
+function startStudy() {
+  S = { queue: shuffle(WORDS.map((_, i) => i)), mastered: new Set(), wrongWords: new Set(),
+        attempts: 0, wrongs: 0, firstTry: 0, t0: Date.now(), cur: null, answered: false, step: 0 };
+  S.timer = setInterval(() => { $("#st-time").textContent = fmt((Date.now() - S.t0) / 1000); }, 250);
+  $("#st-time").textContent = "0:00";
+  show("s-study");
+  nextStudy();
+}
+function nextStudy() {
+  if (!S) return;
+  if (!S.queue.length) return endStudy();
+  S.step++; S.answered = false; S.cur = S.queue[0];
+  const w = WORDS[S.cur];
+  $("#st-prog").textContent = S.mastered.size + "/" + WORDS.length;
+  $("#st-wrong").textContent = S.wrongs;
+  $("#st-bar").style.width = (S.mastered.size / WORDS.length * 100) + "%";
+  $("#st-word").textContent = w.w;
+  $("#st-fb").className = "fb"; $("#st-fb").innerHTML = "";
+  $("#st-next").style.display = "none";
+  const c = makeChoices(S.cur, "k");
+  renderChoices($("#st-choices"), c.list, (v, btn) => answerStudy(v, btn, c.ans));
+  setTimeout(() => speak(w.w), 120);
+}
+function answerStudy(v, btn, ans) {
+  if (S.answered) return;
+  S.answered = true; S.attempts++;
+  const idx = S.queue.shift();
+  const w = WORDS[idx];
+  markChoices($("#st-choices"), ans, btn);
+  if (v === ans) {
+    S.mastered.add(idx);
+    if (!S.wrongWords.has(idx)) S.firstTry++;
+    $("#st-fb").className = "fb ok"; $("#st-fb").textContent = "정답! " + w.w + " = " + w.k;
+    const st = S.step;
+    setTimeout(() => { if (S && S.answered && S.step === st && curScreen() === "s-study") nextStudy(); }, 700);
+  } else {
+    S.wrongs++; S.wrongWords.add(idx);
+    S.queue.splice(Math.min(3, S.queue.length), 0, idx);
+    $("#st-fb").className = "fb bad";
+    $("#st-fb").innerHTML = "아쉬워요! 정답: " + esc(w.k) + "<small>이 단어는 잠시 후 다시 나와요.</small>";
+    $("#st-next").style.display = "block";
+    $("#st-wrong").textContent = S.wrongs;
+  }
+  $("#st-prog").textContent = S.mastered.size + "/" + WORDS.length;
+  $("#st-bar").style.width = (S.mastered.size / WORDS.length * 100) + "%";
+}
+function endStudy() {
+  clearInterval(S.timer);
+  const sec = Math.round((Date.now() - S.t0) / 1000);
+  const prev = store.get(ukey("studyBest"), null);
+  const isBest = prev == null || sec < prev;
+  if (isBest) store.set(ukey("studyBest"), sec);
+  $("#se-time").textContent = fmt(sec);
+  $("#se-best").textContent = isBest ? "🏅 최고 기록!" : "최고 기록 " + fmt(prev);
+  $("#se-att").textContent = S.attempts;
+  $("#se-wrong").textContent = S.wrongs;
+  $("#se-first").textContent = S.firstTry;
+  $("#se-total").textContent = WORDS.length;
+  const wl = [...S.wrongWords].map(i => WORDS[i]);
+  $("#se-wlist-wrap").style.display = wl.length ? "block" : "none";
+  $("#se-wlist").innerHTML = wl.map(w => "<span>" + esc(w.w) + " · " + esc(w.k) + "</span>").join("");
+  $("#se-sync").textContent = "";
+  if (GAS_URL) {
+    $("#se-sync").textContent = "기록 저장 중…";
+    jsonp({ action: "study", id: user.id, name: user.name, seconds: sec, attempts: S.attempts, wrong: S.wrongs, first: S.firstTry, total: WORDS.length, lesson: LESSON_TITLE })
+      .then(r => { $("#se-sync").textContent = r && r.ok ? "✓ 선생님 기록표에 저장됐어요." : "저장 실패: " + ((r && r.error) || ""); })
+      .catch(() => { $("#se-sync").textContent = "인터넷 문제로 기록표 저장에 실패했어요. (기기에는 저장됨)"; });
+  }
+  show("s-studyEnd");
+}
+$("#st-say").onclick = () => S && speak(WORDS[S.cur].w, 0.9);
+$("#st-slow").onclick = () => S && speak(WORDS[S.cur].w, 0.5);
+$("#st-next").onclick = () => { if (S && S.answered) nextStudy(); };
+$("#st-quit").onclick = () => goModes();
+$("#se-again").onclick = () => startStudy();
+$("#se-menu").onclick = () => goModes();
+
+/* =========================================================
+   타임어택
+   ========================================================= */
+const TYPE_LABEL = {
+  defToWord: "영영풀이 → 단어", wordToKor: "단어 → 뜻", korToWord: "뜻 → 단어", listenKor: "듣고 뜻 고르기",
+  dictation: "듣고 받아쓰기", spellFill: "철자 채우기", exampleBlank: "예문 빈칸", arrange: "철자 배열"
+};
+let G = null;
+function typesFor(w) {
+  return ENABLED_TYPES.filter(t => {
+    if (t === "defToWord") return !!w.def;
+    if (t === "exampleBlank") return !!(w.ex && w.form);
+    if (t === "listenKor" || t === "dictation") return ttsOK;
+    return true;
+  });
+}
+function startGame(min) {
+  G = { min, end: Date.now() + min * 60000, total: min * 60, score: 0, correct: 0, wrong: 0, retryCorrect: 0,
+        wrongSet: new Set(), typeCount: {}, cur: null, answered: false, step: 0, last: -1, over: false };
+  G.timer = setInterval(tickGame, 200);
+  updateGameStat(); tickGame();
+  show("s-game");
+  nextQ();
+}
+function tickGame() {
+  if (!G || G.over) return;
+  const left = (G.end - Date.now()) / 1000;
+  $("#g-time").textContent = fmt(Math.ceil(Math.max(0, left)));
+  $("#g-bar").style.width = Math.max(0, left / G.total * 100) + "%";
+  if (left <= 0) endGame();
+}
+function updateGameStat() {
+  $("#g-score").textContent = G.score; $("#g-ok").textContent = G.correct; $("#g-bad").textContent = G.wrong;
+}
+function nextQ() {
+  if (!G || G.over) return;
+  G.step++; G.answered = false;
+  const note = store.get(ukey("wrong"), []);
+  const noteIdx = note.map(x => WORDS.findIndex(w => w.w === x)).filter(i => i >= 0 && i !== G.last);
+  let idx;
+  if (noteIdx.length && Math.random() < 0.3) idx = pick(noteIdx);
+  else { do { idx = Math.floor(Math.random() * WORDS.length); } while (WORDS.length > 1 && idx === G.last); }
+  const retry = note.includes(WORDS[idx].w);
+  G.last = idx;
+  const w = WORDS[idx];
+  const types = typesFor(w);
+  // 덜 나온 유형을 우선 출제해서 모든 유형이 고루 나오게
+  let type;
+  if (Math.random() < 0.5) {
+    const min = Math.min(...types.map(t => G.typeCount[t] || 0));
+    type = pick(types.filter(t => (G.typeCount[t] || 0) === min));
+  } else type = pick(types);
+  G.typeCount[type] = (G.typeCount[type] || 0) + 1;
+  G.cur = { idx, type, retry };
+  renderQ();
+}
+function renderQ() {
+  const { idx, type, retry } = G.cur;
+  const w = WORDS[idx];
+  const area = $("#g-area"), prompt = $("#g-prompt"), hint = $("#g-hint");
+  $("#g-type").textContent = (retry ? "🔁 오답 재도전 · " : "") + TYPE_LABEL[type];
+  $("#g-type").className = "qtype" + (retry ? " retry" : "");
+  $("#g-fb").className = "fb"; $("#g-fb").innerHTML = "";
+  $("#g-next").style.display = "none";
+  prompt.className = "prompt"; prompt.innerHTML = ""; hint.textContent = ""; area.innerHTML = "";
+  const listen = type === "listenKor" || type === "dictation";
+  $("#g-speak").style.display = listen ? "flex" : "none";
+
+  if (type === "defToWord") {
+    prompt.className = "prompt def"; prompt.textContent = w.def;
+    hint.textContent = "이 뜻을 가진 단어는?";
+    const c = makeChoices(idx, "w"); renderChoices(area, c.list, (v, b) => judgeChoice(v, b, c.ans));
+  } else if (type === "wordToKor") {
+    prompt.textContent = w.w; hint.textContent = "알맞은 뜻은?";
+    const c = makeChoices(idx, "k"); renderChoices(area, c.list, (v, b) => judgeChoice(v, b, c.ans));
+  } else if (type === "korToWord") {
+    prompt.textContent = w.k; hint.textContent = "이 뜻의 영어 단어는?";
+    const c = makeChoices(idx, "w"); renderChoices(area, c.list, (v, b) => judgeChoice(v, b, c.ans));
+  } else if (type === "listenKor") {
+    prompt.textContent = "🎧"; hint.textContent = "잘 듣고 알맞은 뜻을 고르세요.";
+    const c = makeChoices(idx, "k"); renderChoices(area, c.list, (v, b) => judgeChoice(v, b, c.ans));
+    setTimeout(() => speak(w.w), 150);
+  } else if (type === "dictation") {
+    prompt.textContent = "🎧"; hint.textContent = "잘 듣고 단어를 쓰세요.";
+    renderInput(area, w.w);
+    setTimeout(() => speak(w.w), 150);
+  } else if (type === "spellFill") {
+    const chars = w.w.split("");
+    const letterPos = chars.map((c, i) => /[a-z]/i.test(c) ? i : -1).filter(i => i >= 0);
+    const n = Math.max(1, Math.round(letterPos.length * 0.4));
+    const hide = new Set(shuffle(letterPos).slice(0, n));
+    prompt.innerHTML = '<div class="spell">' + chars.map((c, i) =>
+      c === " " ? '<span class="gap"></span>' : hide.has(i) ? '<span class="miss">_</span>' : "<span>" + esc(c) + "</span>").join("") + "</div>";
+    hint.textContent = "뜻: " + w.k + " — 빈칸을 채워 단어 전체를 쓰세요.";
+    renderInput(area, w.w);
+  } else if (type === "exampleBlank") {
+    prompt.className = "prompt ex";
+    prompt.innerHTML = esc(w.ex).replace("___", '<span class="blank">&nbsp;</span>');
+    hint.textContent = w.exKor || "";
+    const c = makeChoices(idx, "form"); renderChoices(area, c.list, (v, b) => judgeChoice(v, b, c.ans));
+  } else if (type === "arrange") {
+    prompt.textContent = w.k;
+    const letters = w.w.replace(/\s+/g, "").split("");
+    hint.textContent = "글자를 눌러 순서대로 배열하세요. (" + letters.length + "글자" + (/\s/.test(w.w) ? ", 띄어쓰기 없이" : "") + ")";
+    renderTiles(area, w.w, letters);
+  }
+}
+function renderInput(area, answer) {
+  area.innerHTML = '<div class="row"><input type="text" id="g-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="영어로 입력" style="flex:3"><button class="btn" id="g-submit" type="button" style="flex:1">확인</button></div>';
+  const inp = $("#g-input");
+  const submit = () => {
+    if (G.answered) return;
+    const v = inp.value;
+    if (!v.trim()) { inp.focus(); return; }
+    inp.disabled = true;
+    judge(norm(v) === norm(answer), answer, v);
+  };
+  $("#g-submit").onclick = submit;
+  inp.addEventListener("keydown", e => {
+    if (e.key === "Enter") { e.preventDefault(); if (!G.answered) submit(); else nextQ(); }
+  });
+  setTimeout(() => inp.focus(), 50);
+}
+function renderTiles(area, word, letters) {
+  let order = shuffle(letters.map((_, i) => i));
+  if (letters.length > 1 && order.every((v, i) => letters[v] === letters[i])) order = order.reverse();
+  area.innerHTML = '<div class="tiles answer-line" id="t-ans"></div><div class="tiles" id="t-pool"></div>' +
+    '<div style="text-align:center"><button class="btn ghost small" type="button" id="t-reset">↺ 다시 배열</button></div>';
+  const pool = $("#t-pool"), ans = $("#t-ans");
+  const picked = [];
+  order.forEach(li => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "tile"; b.textContent = letters[li];
+    b.onclick = () => {
+      if (G.answered || b.classList.contains("used")) return;
+      b.classList.add("used"); picked.push(b);
+      const t = document.createElement("button");
+      t.type = "button"; t.className = "tile"; t.textContent = letters[li];
+      t.onclick = () => {
+        if (G.answered) return;
+        const k = [...ans.children].indexOf(t);
+        if (k < 0) return;
+        picked.splice(k, 1)[0].classList.remove("used");
+        t.remove();
+      };
+      ans.appendChild(t);
+      if (ans.children.length === letters.length) {
+        const made = [...ans.children].map(x => x.textContent).join("");
+        judge(made.toLowerCase() === letters.join("").toLowerCase(), word, made);
+      }
+    };
+    pool.appendChild(b);
+  });
+  $("#t-reset").onclick = () => { if (G.answered) return; ans.innerHTML = ""; picked.splice(0).forEach(b => b.classList.remove("used")); };
+}
+function judgeChoice(v, btn, ans) {
+  if (G.answered) return;
+  markChoices($("#g-area"), ans, btn);
+  judge(v === ans, ans, v);
+}
+function judge(ok, ansText) {
+  if (!G || G.over || G.answered) return;
+  G.answered = true;
+  const { idx, retry } = G.cur;
+  const w = WORDS[idx];
+  let note = store.get(ukey("wrong"), []);
+  const fb = $("#g-fb");
+  if (ok) {
+    const pts = retry ? RETRY_POINT : POINT;
+    G.score += pts; G.correct++;
+    if (retry) { G.retryCorrect++; note = note.filter(x => x !== w.w); store.set(ukey("wrong"), note); }
+    fb.className = "fb ok";
+    fb.innerHTML = "정답! +" + pts + "점" + (retry ? " (오답 노트에서 삭제)" : "") + "<small>" + esc(w.w) + " · " + esc(w.k) + "</small>";
+    const st = G.step;
+    setTimeout(() => { if (G && !G.over && G.answered && G.step === st) nextQ(); }, 650);
+  } else {
+    G.wrong++; G.wrongSet.add(idx);
+    if (!note.includes(w.w)) { note.push(w.w); store.set(ukey("wrong"), note); }
+    fb.className = "fb bad";
+    fb.innerHTML = "오답! 정답: " + esc(ansText) + "<small>" + esc(w.w) + " · " + esc(w.k) + " (오답 노트에 저장)</small>";
+    $("#g-next").style.display = "block";
+  }
+  updateGameStat();
+}
+function endGame() {
+  if (!G || G.over) return;
+  G.over = true; clearInterval(G.timer);
+  if (ttsOK) try { speechSynthesis.cancel(); } catch (e) {}
+  const total = G.correct + G.wrong;
+  const acc = total ? Math.round(G.correct / total * 100) : 0;
+  const prev = store.get(ukey("gameBest"), null);
+  const isBest = prev == null || G.score > prev;
+  if (isBest) store.set(ukey("gameBest"), G.score);
+  const rec = { time: new Date().toISOString(), id: user.id, name: user.name, score: G.score, correct: G.correct, wrong: G.wrong, minutes: G.min };
+  const all = store.get(PREFIX + "records", []); all.push(rec); store.set(PREFIX + "records", all.slice(-300));
+  $("#ge-score").textContent = G.score + "점";
+  $("#ge-best").textContent = isBest ? "🏅 내 최고 점수!" : "내 최고 점수 " + prev + "점";
+  $("#ge-ok").textContent = G.correct; $("#ge-bad").textContent = G.wrong;
+  $("#ge-acc").textContent = acc + "%"; $("#ge-retry").textContent = G.retryCorrect;
+  const wl = [...G.wrongSet].map(i => WORDS[i]);
+  $("#ge-wlist-wrap").style.display = wl.length ? "block" : "none";
+  $("#ge-wlist").innerHTML = wl.map(w => "<span>" + esc(w.w) + " · " + esc(w.k) + "</span>").join("");
+  $("#ge-sync").textContent = "";
+  if (GAS_URL) {
+    $("#ge-sync").textContent = "점수 저장 중…";
+    jsonp({ action: "save", id: user.id, name: user.name, score: G.score, correct: G.correct, wrong: G.wrong, retry: G.retryCorrect, minutes: G.min, lesson: LESSON_TITLE })
+      .then(r => { $("#ge-sync").textContent = r && r.ok ? "✓ 순위표에 저장됐어요." : "저장 실패: " + ((r && r.error) || ""); })
+      .catch(() => { $("#ge-sync").textContent = "인터넷 문제로 순위표 저장에 실패했어요. (기기에는 저장됨)"; });
+  }
+  show("s-gameEnd");
+}
+$("#g-say").onclick = () => G && G.cur && speak(WORDS[G.cur.idx].w, 0.9);
+$("#g-slow").onclick = () => G && G.cur && speak(WORDS[G.cur.idx].w, 0.5);
+$("#g-next").onclick = () => { if (G && G.answered) nextQ(); };
+$("#g-quit").onclick = () => endGame();
+$("#ge-menu").onclick = () => goModes();
+$("#ge-rank").onclick = () => openRank();
+
+/* =========================================================
+   순위표
+   ========================================================= */
+function openRank() { show("s-rank"); $("#rk-q").value = ""; loadRank(""); }
+function rankTable(rows) {
+  if (!rows.length) return '<p class="muted">기록이 없어요.</p>';
+  return "<table><thead><tr><th>순위</th><th>학번</th><th>이름</th><th style='text-align:right'>점수</th><th>시간</th></tr></thead><tbody>" +
+    rows.map((r, i) => "<tr><td>" + (i + 1) + "</td><td>" + esc(r.id) + "</td><td>" + esc(r.name) + "</td><td class='num'>" + esc(r.score) +
+      "</td><td class='muted'>" + esc(r.minutes || "") + "분</td></tr>").join("") + "</tbody></table>";
+}
+function loadRank(q) {
+  const body = $("#rk-body");
+  const nq = norm(q);
+  if (!GAS_URL) {
+    $("#rk-src").textContent = "이 기기에서 한 기록만 보여요. (선생님이 구글 시트를 연결하면 반 전체 순위가 나와요)";
+    const rows = store.get(PREFIX + "records", [])
+      .filter(r => !nq || norm(r.id).includes(nq) || norm(r.name).includes(nq))
+      .sort((a, b) => b.score - a.score).slice(0, 100);
+    body.innerHTML = rankTable(rows);
+    return;
+  }
+  $("#rk-src").textContent = "전체 순위 (점수 높은 순 100개)";
+  body.innerHTML = '<p class="muted">불러오는 중…</p>';
+  jsonp({ q })
+    .then(r => { body.innerHTML = r && r.ok ? rankTable(r.rows || []) : '<p class="muted">불러오기 실패</p>'; })
+    .catch(() => { body.innerHTML = '<p class="muted">인터넷 문제로 순위표를 불러오지 못했어요.</p>'; });
+}
+$("#rk-go").onclick = () => loadRank($("#rk-q").value.trim());
+$("#rk-q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); loadRank($("#rk-q").value.trim()); } });
+$("#rk-menu").onclick = () => goModes();
+
+/* =========================================================
+   키보드: 1~4 보기 선택, Enter/Space 다음 문제
+   ========================================================= */
+document.addEventListener("keydown", e => {
+  if (e.defaultPrevented) return;
+  const scr = curScreen();
+  if (scr !== "s-study" && scr !== "s-game") return;
+  const inInput = e.target && e.target.tagName === "INPUT";
+  const ctx = scr === "s-study" ? S : G;
+  if (!ctx) return;
+  if (/^[1-4]$/.test(e.key) && !inInput) {
+    const b = document.querySelectorAll("#" + scr + " .choice")[+e.key - 1];
+    if (b) { e.preventDefault(); b.click(); }
+    return;
+  }
+  if (e.key === "Enter" || (e.key === " " && !inInput)) {
+    if (ctx.answered) { e.preventDefault(); scr === "s-study" ? nextStudy() : nextQ(); }
+  }
+});
+
+/* 시작 */
+if (user && user.id && user.name) goModes(); else show("s-start");
+</script>
+</body>
+</html>
